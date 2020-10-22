@@ -4,7 +4,7 @@
   "description": "Teste de rest API para tutorial do youtube",
   "main": "index.js",
   "scripts": {
-    "start" : "nodemon server.js" 
+    "start": "nodemon server.js"
   },
   "author": "Mauricio Nunes",
   "license": "ISC",
