@@ -14,13 +14,13 @@ router.get('/', (req, res, next) => {
                     quantidade: result.length,
                     pedidos: result.map(pedido => {
                         return {
-                            id_produto: prod.id_pedido,
-                            id_produto: prod.id_produto,
-                            quantidade: prod.quantidade,
+                            id_pedido : pedido.id_pedido,
+                            id_produto: pedido.id_produto,
+                            quantidade: pedido.quantidade,
                             request: {
                                 tipo: 'GET',
                                 descricao: 'Retorna os dados de um pedido especifico',
-                                url: `http://localhost:3000/produtos${pedido.id_pedido}`
+                                url: `http://localhost:3000/produtos/${pedido.id_pedido}`
                             }
     
                         }
@@ -68,23 +68,37 @@ router.post('/', (req, res, next) => {
 
 
 //RETORNA UM PEDIDO POR ID
-router.get('/:id_produto', (req, res, next) => {
-    const id = req.params.id_produto
+router.get('/:id_pedido', (req, res, next) => {
+    mysql.getConnection((error, conn) => {
+        if (error) { console.error(error); res.status(500).send({ error: error }) }
+        conn.query(
+            'SELECT * FROM pedidos WHERE id_pedido = ?;',
+            [req.params.id_pedido],
+            (error, result, fields) => {
+                if (error) { console.error(error); res.status(500).send({ error: error }) }
 
-    if(id === 'especial'){
-        res.status(200).send({
-            mensagem: 'Você descobriu o ID especial',
-            id: id
-        });
-    }else{
-        res.status(200).send({
-            mensagem: `Você passou um ID: ${id}`
-        })
-    }
+                if(result.length == 0){
+                    return res.status(404).send({
+                        mensagem: "Não foi possivel encontrar pedido com esse ID"
+                    });
+                }
 
-    res.status(200).send({
-
-    })
+                const response = {
+                        pedido: {
+                            id_pedido: result[0].id_pedido,
+                            id_produto: result[0].id_produto,
+                            quantidade: result[0].quantidade,
+                            request: {
+                                tipo:  'GET',
+                                descricao: 'Listando produtos por ID',
+                                url: `http://localhost:3000/pedidos`
+                        }
+                    }
+                }
+                return res.status(200).send({response: response})
+            }
+        )
+    });
 })
 
 router.patch('/', (req, res, next) => {

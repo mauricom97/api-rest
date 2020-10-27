@@ -52,12 +52,12 @@ router.post('/', (req, res, next) => {
                 const response = {
                     mensagem: 'Produto inserido com sucesso',
                     produtoCriado: {
-                        id_Produto: resultado.id_produto,
+                        id_Produto: result.id_produto,
                         nome: req.body.nome,
                         preco: req.body.preco,
                         request: {
-                            tipo:  'POST',
-                            descricao: 'Insere produto',
+                            tipo:  'GET',
+                            descricao: 'Lista todos os produtos.',
                             url: `http://localhost:3000/produtos`
                         }
                     }
