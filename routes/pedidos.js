@@ -1,11 +1,35 @@
 const express = require('express');
 const router = express.Router();
-
+const mysql = require('../mysql').pool;
 
 //RETORNA TODOS OS PEDIDOS COM GET
 router.get('/', (req, res, next) => {
-    res.status(200).send({
-        mensagem: 'Retorna os pedidos'
+    mysql.getConnection((error, conn) => {
+        if (error) { console.error(error); res.status(500).send({ error: error }) }
+        conn.query(
+            'SELECT * FROM pedidos;',
+            (error, result, fields) => {
+                if (error) { console.error(error); res.status(500).send({ error: error }) }
+                const response = {
+                    quantidade: result.length,
+                    pedidos: result.map(pedido => {
+                        return {
+                            id_produto: prod.id_pedido,
+                            id_produto: prod.id_produto,
+                            quantidade: prod.quantidade,
+                            request: {
+                                tipo: 'GET',
+                                descricao: 'Retorna os dados de um pedido especifico',
+                                url: `http://localhost:3000/produtos${pedido.id_pedido}`
+                            }
+    
+                        }
+                    })
+                    
+                }
+                return res.status(200).send({response: response})
+            }
+        )
     });
 });
 
@@ -13,15 +37,33 @@ router.get('/', (req, res, next) => {
 //CRIA UM PEDIDO
 router.post('/', (req, res, next) => {
     
-    const pedido = {
-        idProduto: req.body.idProduto,
-        quantidade: req.body.quantidade
-    }
+    mysql.getConnection((error, conn) => {
+        if (error) { console.error(error); res.status(500).send({ error: error }) }
+        conn.query(
+            'INSERT INTO pedidos (id_produto, quantidade) VALUES (?,?)',
+            [req.body.id_produto, req.body.quantidade],
+            (error, result, field) => {
+                conn.release();
+                if (error) { console.error(error); res.status(500).send({ error: error }) }
+                const response = {
+                    mensagem: 'Pedido inserido com sucesso',
+                    ProdutoCriado: {
+                        id_produto: req.body.id_produto,
+                        quantidade: req.body.quantidade,
+                        request: {
+                            tipo:  'GET',
+                            descricao: 'Retorna todos os pedidos.',
+                            url: `http://localhost:3000/pedidos`
+                        }
+                    }
+                }
+                
+                res.status(201).send(response);
+            }
+        )
+    })
 
-        res.status(201).send({
-        mensagem: 'Cria um pedido',
-        pedido: pedido
-    });
+
 });
 
 
