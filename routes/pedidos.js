@@ -91,7 +91,7 @@ router.get('/:id_pedido', (req, res, next) => {
                             request: {
                                 tipo:  'GET',
                                 descricao: 'Listando produtos por ID',
-                                url: `http://localhost:3000/pedidos`
+                                url: `http://localhost:3000/pedidos/${req.params.id_pedido}`
                         }
                     }
                 }
@@ -102,9 +102,38 @@ router.get('/:id_pedido', (req, res, next) => {
 })
 
 router.patch('/', (req, res, next) => {
-    res.status(201).send({
-        mensagem: 'Produto alterado'
-    });
+    mysql.getConnection((error, conn) => {
+        if (error) { console.error(error); res.status(500).send({ error: error }) }
+        conn.query(
+            `UPDATE pedidos
+                SET id_produto = ?,
+                    quantidade = ?
+                    WHERE id_pedido = ?`,
+            [
+             req.body.id_produto,
+             req.body.quantidade,
+             req.body.id_pedido
+            ],
+            (error, result, field) => {
+                conn.release();
+                if (error) { console.error(error); res.status(500).send({ error: error }) }
+                const response = {
+                    mensagem: 'Pedido atualizado com sucesso',
+                    pedidoAtualizado: {
+                        id_Pedido: result.pedido,
+                        quantidade: req.body.quantidade,
+                        id_Produto: req.body.id_produto,
+                        request: {
+                            tipo:  'GET',
+                            descricao: 'Listando pedidos por ID',
+                            url: `http://localhost:3000/produtos/${req.body.id_produto}`
+                        }
+                    }
+                }
+                return res.status(201).send(response);
+            }
+        )
+    })
 });
 
 
